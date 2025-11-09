@@ -1,0 +1,25 @@
+body {
+    background: #f9f9e3;
+}
+body * {
+    box-sizing: border-box;
+}
+.App {
+    width: 380px;
+    height: 380px;
+    margin: 0;
+    background: white;
+    border: 1px solid #eee;
+}
+
+#root {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+p {
+    margin: 0;
+}
