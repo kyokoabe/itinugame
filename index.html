@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ポケモンバトル風ゲーム</title>
+  <style>
+    body {
+      background: linear-gradient(#6db3f2, #1e69de);
+      color: #fff;
+      font-family: 'Press Start 2P', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .battle-field {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    /* --------- ポケモン画像（レスポンシブ） --------- */
+    .pokemon {
+      width: min(40vw, 200px);
+      margin: 10px;
+      position: relative;
+      transition: opacity 1s, transform 0.8s;
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+
+    /* --------- HPバー（レスポンシブ） --------- */
+    .hp-bar {
+      width: min(45vw, 230px);
+      height: 20px;
+      background: #333;
+      border: 2px solid #fff;
+      border-radius: 5px;
+      margin: 5px auto;
+    }
+
+    .hp-inner {
+      height: 100%;
+      background: limegreen;
+      width: 100%;
+      transition: width 0.5s;
+    }
+
+    /* --------- 敵 & プレイヤー配置 --------- */
+    .enemy, .player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .enemy {
+      align-self: flex-end;
+    }
+
+    .player {
+      align-self: flex-start;
+    }
+
+    /* --------- メッセージ --------- */
+    .message-box {
+      background: rgba(0,0,0,0.6);
+      border: 2px solid #fff;
+      padding: 20px;
+      margin-top: 15px;
+      width: 85%;
+      height: 100px;
+      font-size: 12px;
+      text-align: left;
+      overflow: hidden;
+    }
+
+    /* --------- 攻撃ボタン（レスポンシブ） --------- */
+    .attack-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
+      padding-bottom: 20px;
+    }
+
+    .attack-buttons button {
+      margin: 5px;
+      padding: 10px 14px;
+      background: #ffcb05;
+      border: 2px solid #2a75bb;
+      border-radius: 10px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .attack-buttons button:hover {
+      background: #ffdf5d;
+      transform: scale(1.05);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #restart {
+      background: #4caf50;
+      border: 2px solid #fff;
+      padding: 12px 20px;
+      font-size: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+      display: none;
+    }
+
+    #restart:hover {
+      background: #6cd56f;
+    }
+
+    .faint {
+      opacity: 0;
+      transform: rotate(90deg) translateY(50px);
+    }
+
+    /* --------- 小さい画面向け調整 ---------- */
+    /* ======= スマホ（600px以下）限定調整 ======= */
+@media (max-width: 600px) {
+
+/* ▼ プレイヤー側の画像をもっと上へ */
+.player {
+  margin-top: -20px; /* ← ここで画像を上へ持ち上げる */
+}
+.player .pokemon {
+  width: 40vw;       /* 少しだけ小さくして収まりを良くする */
+}
+
+/* ▼ 敵も少し調整して全体バランスUP（任意） */
+.enemy .pokemon {
+  width: 38vw;
+}
+
+/* ▼ メッセージBOXを大きくして見やすく */
+.message-box {
+  width: 92%;
+  height: 110px;       /* ← 高さを増やして読みやすく */
+  font-size: 12px;     /* ← フォントUP */
+  padding: 12px;
+  line-height: 1.5;
+  margin-top: 15px;    /* 少し余白を足す */
+}
+
+/* ▼ ボタンレイアウト（2×2）を維持 */
+.attack-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 92%;
+  margin-top: 10px;
+}
+
+.attack-buttons button {
+  font-size: 10px;
+  padding: 12px 5px;
+}
+
+/* ▼ HPバーも少し調整 */
+.hp-bar {
+  width: 85%;
+  height: 18px;
+}
+}
+
+    /* ======= スマホ画面だけ適用 (画面幅600px以下) ======= */
+@media (max-width: 600px) {
+
+/* コメント欄を小さめにギュッと */
+.message-box {
+  width: 90%;
+  height: 60px;          /* ← 高さを低くする */
+  font-size: 10px;       /* 文字小さく */
+  padding: 10px;
+  margin-top: 8px;
+}
+
+/* ボタン2×2のぎゅっと配置 */
+.attack-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 90%;
+  margin-top: 10px;
+}
+
+.attack-buttons button {
+  padding: 10px 4px;
+  font-size: 9px;
+}
+
+/* ポケモン画像を少し小さくしてまとまり感UP */
+.pokemon {
+  width: 42vw;
+}
+
+/* HPバーも少し小さめに */
+.hp-bar {
+  height: 16px;
+  width: 80%;
+}
+}
+/* --- スマホ画面（最大幅 600px 以下）のときだけ適用 --- */
+@media screen and (max-width: 600px) {
+
+/* プレイヤー画像をもっと上へ */
+.player .pokemon {
+  margin-top: -50px;   /* ← 上に詰める量。もっと上げたいなら -80px など */
+  transform: scale(0.9); /* 画像を少し小さくして見やすく */
+}
+
+/* メッセージBOXを大きく */
+.message-box {
+  height: 200px;  /* ← 好みで調整：120〜200px */
+  font-size: 14px;
+  padding: 200px;
+}
+
+/* ボタン位置を下にまとめる（ギュッと見やすく） */
+.attack-buttons {
+  margin-top: 5px;
+}
+
+.attack-buttons button {
+  padding: 12px;
+  font-size: 12px;
+}
+
+/* 敵側の画像位置も少し調整したい場合 */
+.enemy .pokemon {
+  margin-top: -20px;
+}
+}
+#restart {
+  display: none;
+  background: #4caf50;
+  border: 2px solid #fff;
+  padding: 12px 20px;
+  font-size: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+#restart:hover {
+  background: #6cd56f;
+}
+
+/* スマホ横向き時のリスタート位置調整 */
+@media (max-width: 600px) and (orientation: landscape) {
+  #restart {
+    font-size: 12px;
+    padding: 10px 14px;
+    margin-top: 8px;
+  }
+}
+/* ======= スマホ横向き（ランドスケープ）専用 ======= */
+@media (max-width: 600px) and (orientation: landscape) {
+
+/* 上下ではなく横に並べる */
+.battle-field {
+  flex-direction: row;
+  gap: 20px;
+  padding: 10px;
+}
+
+/* プレイヤーと敵を左右配置 */
+.enemy, .player {
+  width: 45%;
+  margin: 0;
+}
+
+.pokemon {
+  width: 30vw;
+}
+
+/* メッセージBOXを下に横長で表示 */
+.message-box {
+  position: absolute;
+  bottom: 10px;
+  left: 5%;
+  width: 90%;
+  height: 80px;
+  font-size: 10px;
+  padding: 8px;
+}
+
+/* ボタンをさらに下にまとめる */
+.attack-buttons {
+  position: absolute;
+  bottom: 95px;
+  left: 5%;
+  width: 90%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+/* HPバーも横向き用に調整 */
+.hp-bar {
+  width: 35vw;
+  height: 14px;
+}
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="battle-field">
+
+    <!-- 敵ポケモン（画像を上 → HPバーを下へ） -->
+    <div class="enemy">
+      <div class="pokemon" id="enemyPokemon">
+        <img src="img/itinu.png">
+      </div>
+      <div class="hp-bar"><div class="hp-inner" id="enemyHp"></div></div>
+    </div>
+
+    <!-- プレイヤーポケモン -->
+    <div class="player">
+      <div class="pokemon" id="playerPokemon">
+        <img src="img/uenu.png">
+      </div>
+      <div class="hp-bar"><div class="hp-inner" id="playerHp"></div></div>
+    </div>
+
+    <div class="message-box" id="message">いちぬが現れた！</div>
+
+    <div class="attack-buttons" id="buttons">
+      <button onclick="attack('たいあたり')">たいあたり</button>
+      <button onclick="attack('配信')">配信</button>
+      <button onclick="attack('なきごえ')">なきごえ</button>
+      <button onclick="attack('からあげ')">からあげ</button>
+    </div>
+
+    <button id="restart" onclick="restartGame()">リスタート</button>
+  </div>
+
+  <script>
+    let playerHP = 100;
+    let enemyHP = 100;
+    const message = document.getElementById('message');
+    const playerHpBar = document.getElementById('playerHp');
+    const enemyHpBar = document.getElementById('enemyHp');
+    const playerMon = document.getElementById('playerPokemon');
+    const enemyMon = document.getElementById('enemyPokemon');
+    const restartBtn = document.getElementById('restart');
+    const buttons = document.getElementById('buttons');
+
+    function updateHpBars() {
+      playerHpBar.style.width = playerHP + '%';
+      enemyHpBar.style.width = enemyHP + '%';
+      if (playerHP < 40) playerHpBar.style.background = 'orange';
+      if (playerHP < 20) playerHpBar.style.background = 'red';
+      if (enemyHP < 40) enemyHpBar.style.background = 'orange';
+      if (enemyHP < 20) enemyHpBar.style.background = 'red';
+    }
+
+    function attack(move) {
+      if (playerHP <= 0 || enemyHP <= 0) return;
+      let damage = Math.floor(Math.random() * 20) + 5;
+      enemyHP -= damage;
+      if (enemyHP < 0) enemyHP = 0;
+      message.textContent = `ウェンの${move}! 敵に${damage}のダメージ!`;
+      updateHpBars();
+
+      if (enemyHP <= 0) {
+        enemyMon.classList.add('faint');
+        message.textContent = "いちぬはたおれた！ いちぬ「許さないぬ」";
+        buttons.classList.add('hidden');
+        restartBtn.style.display = 'inline-block';
+        return;
+      }
+
+      buttons.classList.add('hidden');
+      setTimeout(() => {
+        let enemyDamage = Math.floor(Math.random() * 15) + 5;
+        playerHP -= enemyDamage;
+        if (playerHP < 0) playerHP = 0;
+        message.textContent = `いちぬの呪い！ ${enemyDamage}のダメージ！`;
+        updateHpBars();
+
+        if (playerHP <= 0) {
+          playerMon.classList.add('faint');
+          message.textContent = "ウェンはたおれた… 😢いちぬはケラケラ笑っている";
+          restartBtn.style.display = 'inline-block';
+        } else {
+          setTimeout(() => {
+            message.textContent = "どうする？";
+            buttons.classList.remove('hidden');
+          }, 1000);
+        }
+      }, 1200);
+    }
+
+    function restartGame() {
+      playerHP = 100;
+      enemyHP = 100;
+      updateHpBars();
+      message.textContent = "懲りないやつぬ";
+      playerHpBar.style.background = "limegreen";
+      enemyHpBar.style.background = "limegreen";
+      playerMon.classList.remove('faint');
+      enemyMon.classList.remove('faint');
+      buttons.classList.remove('hidden');
+      restartBtn.style.display = 'none';
+    }
+
+    updateHpBars();
+  </script>
+</body>
+</html>
